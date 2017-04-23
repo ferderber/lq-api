@@ -1,0 +1,29 @@
+{
+  "name": "lq-api",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "nodemon --watch routes --watch models index.js"
+  },
+  "dependencies": {
+    "bcrypt": "^1.0.2",
+    "jsonwebtoken": "^7.3.0",
+    "kcors": "^1.3.2",
+    "knex": "^0.12.9",
+    "koa": "^2.0.1",
+    "koa-bodyparser": "^4.2.0",
+    "koa-jwt": "^3.0.1",
+    "koa-route": "^3.2.0",
+    "lolapi": "^0.3.1",
+    "objection": "next",
+    "pg": "^6.1.5",
+    "pg-hstore": "^2.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3",
+    "nodemon": "^1.11.0"
+  }
+}

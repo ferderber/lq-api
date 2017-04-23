@@ -1,0 +1,37 @@
+const config = {
+  dev: {
+    port: 3000,
+    secret: 'secret',
+    database: 'lq',
+    user: 'matt',
+    password: '',
+    leagueAPIKey: process.env.LEAGUE_API_KEY,
+    db_host: 'localhost',
+    dialect: 'pg',
+    db_port: 5432,
+  },
+  production: {
+    port: 4500,
+    secret: process.env.SECRET,
+    database: 'lq',
+    leagueAPIKey: process.env.LEAGUE_API_KEY,
+    user: 'web',
+    password: 'web',
+    db_host: 'localhost',
+    dialect: 'pg',
+    db_port: 5432,
+  },
+  test: {
+    port: 4500,
+    host: 'localhost',
+    secret: 'secret',
+    database: 'lq',
+    user: 'web',
+    password: 'web',
+    leagueAPIKey: process.env.LEAGUE_API_KEY,
+    db_host: 'localhost',
+    dialect: 'pg',
+    db_port: 5432,
+  },
+};
+module.exports = config[process.env.NODE_ENV ? process.env.NODE_ENV : 'dev'];

@@ -78,6 +78,7 @@ async function getNewQuests(id) {
 }
 
 // Routes
+const self =
 module.exports = {
   offerQuests: async (ctx) => {
     // Return 3 new quests
@@ -155,7 +156,7 @@ module.exports = {
           }
         }
         return user.quests;
-      }).then(() => { ctx.status = 204; })
+      }).then(() => self.allQuests(ctx))
       .catch((err) => { console.error(err); ctx.status = 500; });
   },
 

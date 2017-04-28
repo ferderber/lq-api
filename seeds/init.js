@@ -1,5 +1,5 @@
 const config = require('../config');
-const lolapi = require('lolapi')(config.leagueAPIKey, 'na');
+const k = require('../util').kindred();
 const Champion = require('../models/champion');
 const Quest = require('../models/quest');
 const Model = require('objection').Model;
@@ -18,17 +18,14 @@ function getObjectives() {
   return objectives;
 }
 function getChampions() {
-  return new Promise((resolve, reject) => {
-    lolapi.Static.getChampions((err, champions) => {
-      if (err) { reject(err); }
-      const champKeys = Object.keys(champions.data);
-      const champs = [];
-      for (let i = 0; i < champKeys.length; i += 1) {
-        const champion = champions.data[champKeys[i]];
-        champs.push({ id: champion.id, name: champion.name, key: champion.key });
-      }
-      resolve(champs);
-    });
+  k.Static.champions.then((champions) => {
+    const champKeys = Object.keys(champions.data);
+    const champs = [];
+    for (let i = 0; i < champKeys.length; i += 1) {
+      const champion = champions.data[champKeys[i]];
+      champs.push({ id: champion.id, name: champion.name, key: champion.key });
+    }
+    return champs;
   });
 }
 async function addQuests() {
@@ -48,11 +45,8 @@ async function addQuests() {
 }
 exports.seed = function (knex) {
   Model.knex(knex);
-  return knex('Objective').del()
-    .then(() => knex('Objective').insert(getObjectives()))
-       .then(() => knex('Champion').del())
-       .then(() => knex('Champion').del())
+  return knex('Objective').insert(getObjectives())
        .then(() => getChampions())
        .then(champions => knex('Champion').insert(champions))
-       .then(() => knex('Quest').del().then(() => addQuests()));
+       .then(() => addQuests());
 };

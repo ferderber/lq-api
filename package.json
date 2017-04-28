@@ -8,12 +8,12 @@
     "bcrypt": "^1.0.2",
     "jsonwebtoken": "^7.3.0",
     "kcors": "^1.3.2",
+    "kindred-api": "^2.0.14",
     "knex": "^0.12.9",
     "koa": "^2.0.1",
     "koa-bodyparser": "^4.2.0",
     "koa-jwt": "^3.0.1",
     "koa-route": "^3.2.0",
-    "lolapi": "^0.3.1",
     "objection": "next",
     "pg": "^6.1.5",
     "pg-hstore": "^2.3.2"

@@ -21,7 +21,8 @@ exports.up = function (knex) {
       table.string('username').unique();
       table.string('email').unique();
       table.string('password');
-      table.integer('leagueId').unsigned().references('id').inTable('Summoner');
+      table.integer('summonerId').unsigned().references('id').inTable('Summoner');
+      table.integer('accountId').unsigned();
     })
     .createTable('Quest', (table) => {
       table.increments('id').primary();
@@ -43,6 +44,7 @@ exports.up = function (knex) {
       table.integer('userId').unsigned().references('id').inTable('User');
       table.boolean('active').default(false);
       table.boolean('completed').default(false);
+      table.timestamp('activationDate');
     })
     .createTable('UserQuestObjective', (table) => {
       table.increments('id').primary();

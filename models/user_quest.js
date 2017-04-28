@@ -16,6 +16,7 @@ class UserQuest extends Model {
         userId: { type: 'integer' },
         active: { type: 'boolean', default: false },
         completed: { type: 'boolean', default: false },
+        activationDate: { type: 'string' },
       },
     };
   }

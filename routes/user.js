@@ -2,24 +2,13 @@ const User = require('../models/user.js');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const bcrypt = require('bcrypt');
-const lolapi = require('lolapi')(config.leagueAPIKey, 'na');
+const k = require('../util').kindred();
 const Quest = require('../models/quest');
 const Summoner = require('../models/summoner');
 const UserQuest = require('../models/user_quest');
 
 const secret = config.secret;
 
-// Retrieves a summoner by name
-function getSummoner(name) {
-  return new Promise((resolve, reject) =>
-    lolapi.Summoner.getByName(name, (err, summonerData) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(summonerData[Object.keys(summonerData)[0]]);
-      }
-    }));
-}
 // Validates that a password matches its hash
 function isValidPassword(passwordHash, password) {
   return bcrypt.compareSync(password, passwordHash);
@@ -38,14 +27,15 @@ function createUserResponse(user) {
 // Routes
 module.exports = {
   getUser: async (ctx) => {
-    const id = jwt.decode(ctx.request.header.authorization, secret);
-    ctx.body = await User.query().eager('summoner').where('id', id).then(user =>
-      createUserResponse(user));
+    ctx.body = await User.query().eager('summoner')
+      .findById(ctx.user.id)
+      .then(user => createUserResponse(user));
   },
   createUser: async (ctx) => {
     const user = ctx.request.body;
     if (user && user.username && user.email && user.password && user.summonerName) {
-      const summoner = await getSummoner(user.summonerName).catch(err => console.error(err));
+      const summoner = await k.Summoner.get({ name: user.summonerName })
+        .catch(err => console.error(err));
       const s = await Summoner.query().insertAndFetch({
         id: summoner.id,
         summonerName: summoner.name,
@@ -55,7 +45,8 @@ module.exports = {
         username: user.username,
         password: user.password,
         email: user.email,
-        leagueId: summoner.id,
+        summonerId: summoner.id,
+        accountId: summoner.accountId,
       });
       const token = jwt.sign({ id: u.id }, secret);
       u.summoner = s;
@@ -63,14 +54,21 @@ module.exports = {
         user: createUserResponse(u),
         token,
       };
-      Quest.query().eager('objectives').limit(8)
+      Quest.query().eager('[objectives]')
+        .where('championId', '=', 134)
+        .orWhere('championId', '=', 99)
+        .orWhere('championId', '=', 67)
+        .orWhere('championId', '=', 103)
+        .orWhere('championId', '=', 1)
+        .orWhere('championId', '=', 22)
+        .orWhere('championId', '=', 51)
         .then((quests) => {
           console.log(quests);
           const userQuests = [];
           for (let i = 0; i < quests.length; i++) {
             const questObjectives = [];
-            for (let k = 0; k < quests[i].objectives.length; k++) {
-              const obj = quests[i].objectives[k];
+            for (let j = 0; j < quests[i].objectives.length; j++) {
+              const obj = quests[i].objectives[j];
               questObjectives.push({ questObjectiveId: obj.id, progress: 0 });
             }
             userQuests.push({
@@ -78,6 +76,7 @@ module.exports = {
               userId: u.id,
               complete: false,
               active: true,
+              activationDate: new Date().toUTCString(),
               objectives: questObjectives,
             });
           }
@@ -99,7 +98,7 @@ module.exports = {
         if (isValidPassword(user.password, ctx.request.body.password)) {
           const payload = { id: user.id };
           const token = jwt.sign(payload, secret);
-          ctx.body = { message: 'ok', token, user: createUserResponse(u) };
+          ctx.body = { message: 'ok', token, user: createUserResponse(user) };
         } else {
           ctx.body = { message: 'Invalid username or password' };
           ctx.status = 401;

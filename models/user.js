@@ -17,7 +17,8 @@ class User extends Model {
         username: { type: 'string', minLength: 1, maxLength: 100 },
         password: { type: 'string' },
         email: { type: 'string' },
-        leagueId: { type: 'integer' },
+        summonerId: { type: 'integer' },
+        accountId: { type: 'integer' },
       },
     };
   }
@@ -36,7 +37,7 @@ class User extends Model {
         relation: Model.HasOneRelation,
         modelClass: Summoner,
         join: {
-          from: 'User.leagueId',
+          from: 'User.summonerId',
           to: 'Summoner.id',
         },
       },

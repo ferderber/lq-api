@@ -8,7 +8,6 @@ const k = util.kindred();
 
 // Creates a flattened quest object
 function createQuestResponse(quests) {
-  console.log(quests);
   return quests.map(q => ({
     id: q.id,
     title: q.quest.title,
@@ -94,7 +93,7 @@ module.exports = {
     .eager('[objectives.[objective.objective], quest.champion]')
     .patchAndFetchById(id, { active: true, activationDate: new Date().toUTCString() })
     .then(quest => createQuestResponse([quest]))
-    .catch(err => console.log(err));
+    .catch(err => console.error(err));
   },
   allQuests: async (ctx) => {
     // Return all quests (in progress or completed) for the given user

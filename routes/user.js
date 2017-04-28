@@ -63,7 +63,6 @@ module.exports = {
         .orWhere('championId', '=', 22)
         .orWhere('championId', '=', 51)
         .then((quests) => {
-          console.log(quests);
           const userQuests = [];
           for (let i = 0; i < quests.length; i++) {
             const questObjectives = [];

@@ -1,6 +1,6 @@
-const config = require('./config');
+const config = require('./config.js');
 
 module.exports = {
   client: config.dialect,
-  connection: { user: config.user, database: config.database },
+  connection: { user: config.user, password: config.password, database: config.database },
 };

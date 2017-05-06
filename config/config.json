@@ -8,14 +8,14 @@
   },
   "test": {
     "username": "web",
-    "password": "",
+    "password": "web",
     "database": "lq",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "production": {
     "username": "web",
-    "password": "",
+    "password": "web",
     "database": "lq",
     "host": "127.0.0.1",
     "dialect": "postgres"

@@ -1,5 +1,5 @@
 const Koa = require('koa');
-const config = require('./config');
+const config = require('./config.js');
 const koajwt = require('koa-jwt');
 const bodyParser = require('koa-bodyparser');
 const cors = require('kcors');

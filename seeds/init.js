@@ -1,4 +1,3 @@
-const config = require('../config');
 const k = require('../util').kindred();
 const Champion = require('../models/champion');
 const Quest = require('../models/quest');
@@ -18,7 +17,7 @@ function getObjectives() {
   return objectives;
 }
 function getChampions() {
-  k.Static.champions.then((champions) => {
+  return k.Static.champions({ options: { champData: 'all' } }).then((champions) => {
     const champKeys = Object.keys(champions.data);
     const champs = [];
     for (let i = 0; i < champKeys.length; i += 1) {
@@ -43,7 +42,7 @@ async function addQuests() {
     return Quest.query().insertGraph(quests);
   });
 }
-exports.seed = function (knex) {
+exports.seed = (knex) => {
   Model.knex(knex);
   return knex('Objective').insert(getObjectives())
        .then(() => getChampions())

@@ -1,5 +1,5 @@
 const Kindred = require('kindred-api');
-const config = require('./config');
+const config = require('./config.js');
 
 const REGIONS = Kindred.REGIONS;
 const LIMITS = Kindred.LIMITS;

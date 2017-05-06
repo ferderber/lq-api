@@ -21,7 +21,7 @@ routes.auth.push(_.get('/api/user/:id', user.getUser)); // Gets the user identif
 routes.auth.push(_.get('/api/user', user.getUser)); // Gets the current authenticated user
 
 // Leaderboard data (Not yet implemented)
-// routes.auth.push(_.get('/api/user/stats/:limit', user.getStats)); // Gets the top :limit users sorted by score
-// routes.auth.push(_.get('/api/user/:id/stats', user.getStats));
+routes.auth.push(_.get('/api/user/stats/:limit', user.getStats)); // Gets the top :limit users sorted by score
+// routes.auth.push(_.get('/api/user/:id/stats', user.getStats)); // Gets detailed user stats
 // Export array of routes
 module.exports = routes;

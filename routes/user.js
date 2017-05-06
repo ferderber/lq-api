@@ -24,6 +24,15 @@ function createUserResponse(user) {
   };
 }
 
+// Creates stats for an array of users
+function createStatsResponse(users) {
+  return users.map(user => ({
+    summonerName: user.summoner.summonerName,
+    level: user.summoner.level,
+    points: user.quests
+        .reduce((acc, quest) => acc + (quest.completed ? quest.quest.points : 0), 0) }));
+}
+
 // Routes
 module.exports = {
   getUser: async (ctx) => {
@@ -91,10 +100,10 @@ module.exports = {
   authenticate: async (ctx) => {
     await User.query()
       .eager('summoner')
-      .where('username', ctx.request.body.username)
+      .where(User.raw('lower("username")'), 'like', `${ctx.request.body.username}`)
       .then((u) => {
         const user = u[0];
-        if (isValidPassword(user.password, ctx.request.body.password)) {
+        if (user && isValidPassword(user.password, ctx.request.body.password)) {
           const payload = { id: user.id };
           const token = jwt.sign(payload, secret);
           ctx.body = { message: 'ok', token, user: createUserResponse(user) };
@@ -105,8 +114,10 @@ module.exports = {
       })
       .catch(err => console.error(err));
   },
-  getStats: async (ctx) => {
-    ctx.status = 405;
+  getStats: async (ctx, limit) => {
+    ctx.body = createStatsResponse(await User.query()
+      .eager('[quests.quest, summoner]'))
+      .sort((u1, u2) => u1.points < u2.points).slice(0, limit);
   },
   verify: (ctx) => {
     ctx.status = 405;

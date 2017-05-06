@@ -93,8 +93,8 @@ module.exports = {
         .then(userQuests => UserQuest.query().insertGraph(userQuests))
         .catch(err => console.error(err));
     } else {
+      ctx.body = { message: 'Missing user details' };
       ctx.status = 412;
-      ctx.body = { message: 'Missing signup details' };
     }
   },
   authenticate: async (ctx) => {

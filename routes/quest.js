@@ -78,8 +78,7 @@ async function getNewQuests(id) {
 }
 
 // Routes
-const self =
-module.exports = {
+const self = {
   offerQuests: async (ctx) => {
     // Return 3 new quests
     ctx.body = await getNewQuests(ctx.user.id)
@@ -161,3 +160,4 @@ module.exports = {
   },
 
 };
+module.exports = self;

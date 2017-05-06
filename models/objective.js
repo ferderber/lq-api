@@ -9,7 +9,6 @@ class Objective extends Model {
     return {
       type: 'object',
       required: ['key'],
-
       properties: {
         id: { type: 'integer' },
         key: { type: 'string', minLength: 1, maxLength: 255 },

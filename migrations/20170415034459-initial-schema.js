@@ -1,5 +1,5 @@
-exports.up = function (knex) {
-  return knex.schema
+exports.up = knex =>
+   knex.schema
     .createTable('Champion', (table) => {
       table.integer('id').unsigned().primary();
       table.string('key').unique();
@@ -23,6 +23,7 @@ exports.up = function (knex) {
       table.string('password');
       table.integer('summonerId').unsigned().references('id').inTable('Summoner');
       table.integer('accountId').unsigned();
+      table.index('username');
     })
     .createTable('Quest', (table) => {
       table.increments('id').primary();
@@ -52,10 +53,9 @@ exports.up = function (knex) {
       table.integer('userQuestId').unsigned().references('id').inTable('UserQuest');
       table.integer('progress');
     });
-};
 
-exports.down = function (knex) {
-  return knex.schema
+exports.down = knex =>
+  knex.schema
     .dropTableIfExists('UserQuestObjective')
     .dropTableIfExists('UserQuest')
     .dropTableIfExists('User')
@@ -64,4 +64,3 @@ exports.down = function (knex) {
     .dropTableIfExists('Quest')
     .dropTableIfExists('Objective')
     .dropTableIfExists('Champion');
-};

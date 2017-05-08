@@ -63,35 +63,6 @@ module.exports = {
         user: createUserResponse(u),
         token,
       };
-      Quest.query().eager('[objectives]')
-        .where('championId', '=', 134)
-        .orWhere('championId', '=', 99)
-        .orWhere('championId', '=', 67)
-        .orWhere('championId', '=', 103)
-        .orWhere('championId', '=', 1)
-        .orWhere('championId', '=', 22)
-        .orWhere('championId', '=', 51)
-        .then((quests) => {
-          const userQuests = [];
-          for (let i = 0; i < quests.length; i++) {
-            const questObjectives = [];
-            for (let j = 0; j < quests[i].objectives.length; j++) {
-              const obj = quests[i].objectives[j];
-              questObjectives.push({ questObjectiveId: obj.id, progress: 0 });
-            }
-            userQuests.push({
-              questId: quests[i].id,
-              userId: u.id,
-              complete: false,
-              active: true,
-              activationDate: new Date().toUTCString(),
-              objectives: questObjectives,
-            });
-          }
-          return userQuests;
-        })
-        .then(userQuests => UserQuest.query().insertGraph(userQuests))
-        .catch(err => console.error(err));
     } else {
       ctx.body = { message: 'Missing user details' };
       ctx.status = 412;

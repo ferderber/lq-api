@@ -39,11 +39,13 @@ async function getNewQuests(id) {
   const userQuests = await UserQuest.query().where('userId', '=', id).eager('quest');
   const currentQuests = [];
   let numOffered = 0;
+  let numActive = 0;
   for (let i = 0; i < userQuests.length; i++) {
     currentQuests.push(userQuests[i].questId); // Fill with questIds for query
     if (!userQuests[i].active) { numOffered++; }
+    if (userQuests[i].active && !userQuests[i].completed) numActive++;
   }
-  if (numOffered === 0) {
+  if (numOffered === 0 && numActive < 5) {
     // Find quests that user is not already doing
     return Quest.query().whereNotIn('id', currentQuests).eager('objectives')
       .then((quests) => {
@@ -74,7 +76,6 @@ async function getNewQuests(id) {
             objectives: questObjectives,
           });
         }
-        console.log(newQuests);
         return newQuests;
       });
   }
@@ -109,11 +110,11 @@ const self = {
       .delete()
       .where('userId', '=', ctx.user.id)
       .andWhere('active', '=', false)
-      .then(a => console.log(a))
       .catch(err => console.error(err));
   },
   allQuests: async (ctx) => {
     // Return all quests (in progress or completed) for the given user
+    await self.offerQuests(ctx);
     ctx.body = await UserQuest.query()
       .eager('[objectives.[objective.objective], quest.champion]')
       .where('userId', '=', ctx.user.id)

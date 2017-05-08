@@ -101,7 +101,7 @@ const self = {
       .where('userId', '=', ctx.user.id)
       .eager('[objectives.[objective.objective], quest.champion]')
       .patchAndFetchById(id, { active: true, activationDate: new Date().toUTCString() })
-      .then(quest => createQuestResponse([quest]))
+      .then(quest => createQuestResponse([quest])[0])
       .catch(err => console.error(err));
     // Delete all other quest offers
     UserQuest

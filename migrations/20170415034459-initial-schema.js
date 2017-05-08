@@ -35,7 +35,7 @@ exports.up = knex =>
     .createTable('QuestObjective', (table) => {
       table.increments('id').primary();
       table.integer('questId').unsigned().references('id').inTable('Quest');
-      table.integer('objectiveId').unsigned().references('id').inTable('Objective');
+      table.integer('objectiveId').unsigned().references('id').inTable('Objective').onDelete('CASCADE');
       table.integer('goalType').unsigned();
       table.integer('goal').unsigned();
     })
@@ -50,7 +50,7 @@ exports.up = knex =>
     .createTable('UserQuestObjective', (table) => {
       table.increments('id').primary();
       table.integer('questObjectiveId').unsigned().references('id').inTable('QuestObjective');
-      table.integer('userQuestId').unsigned().references('id').inTable('UserQuest');
+      table.integer('userQuestId').unsigned().references('id').inTable('UserQuest').onDelete('CASCADE');
       table.integer('progress');
     });
 

@@ -110,6 +110,7 @@ const self = {
       .delete()
       .where('userId', '=', ctx.user.id)
       .andWhere('active', '=', false)
+      .then()
       .catch(err => console.error(err));
   },
   allQuests: async (ctx) => {

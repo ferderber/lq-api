@@ -105,7 +105,7 @@ const self = {
       .then(quest => createQuestResponse([quest])[0])
       .catch(err => console.error(err));
     // Delete all other quest offers
-    UserQuest
+    await UserQuest
       .query()
       .delete()
       .where('userId', '=', ctx.user.id)

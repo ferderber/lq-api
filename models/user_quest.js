@@ -41,8 +41,6 @@ class UserQuest extends Model {
       },
     };
   }
-
-
 }
 
 module.exports = UserQuest;

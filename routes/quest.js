@@ -29,52 +29,56 @@ function createQuestResponse(quests) {
 function getParticipantData(id, champion, game) {
   if (game.participantIdentities[0].player) {
     const identity = game.participantIdentities
-    .find(participant => participant.player.accountId === id);
+      .find(participant => participant.player.accountId === id);
     return game.participants.find(p => identity.participantId === p.participantId);
   }
   return game.participants.find(p => p.championId === champion);
 }
 // Finds 3 (or fewer) new quests for a user
 async function getNewQuests(id) {
-  return UserQuest.query().where('userId', '=', id).eager('quest').then((userQuests) => {
-    const currentQuests = [];
-    for (let i = 0; i < userQuests.length; i++) {
-      currentQuests.push(userQuests[i].questId); // Fill with questIds for query
-    }
-    return currentQuests;
-  })
-  // Find quests that user is not already doing
-  .then(currentQuests => Quest.query().whereNotIn('id', currentQuests).eager('objectives'))
-  .then((quests) => {
-    const newQuests = [];
-    let rand;
-    let upperLimit;
-    if (quests.length > 3) {
-      // Get random position in available quests (3 away from length)
-      rand = Math.floor(Math.random() * (quests.length - 3));
-      // Only use 3 quests
-      upperLimit = rand + 3;
-    } else {
-      rand = 0;
-      upperLimit = quests.length;
-    }
-    for (let i = rand; i < upperLimit; i++) {
-      const questObjectives = [];
-      // Create userQuestObjective array for userQuest
-      for (let j = 0; j < quests[j].objectives.length; j++) {
-        const obj = quests[i].objectives[j];
-        questObjectives.push({ questObjectiveId: obj.id, progress: 0 });
-      }
-      newQuests.push({
-        questId: quests[i].id,
-        userId: id,
-        complete: false,
-        active: false,
-        objectives: questObjectives,
+  const userQuests = await UserQuest.query().where('userId', '=', id).eager('quest');
+  const currentQuests = [];
+  let numOffered = 0;
+  for (let i = 0; i < userQuests.length; i++) {
+    currentQuests.push(userQuests[i].questId); // Fill with questIds for query
+    if (!userQuests[i].active) { numOffered++; }
+  }
+  if (numOffered === 0) {
+    // Find quests that user is not already doing
+    return Quest.query().whereNotIn('id', currentQuests).eager('objectives')
+      .then((quests) => {
+        const newQuests = [];
+        let rand;
+        let upperLimit;
+        if (quests.length > 3) {
+          // Get random position in available quests (3 away from length)
+          rand = Math.floor(Math.random() * (quests.length - 3));
+          // Only use 3 quests
+          upperLimit = rand + 3;
+        } else {
+          rand = 0;
+          upperLimit = quests.length;
+        }
+        for (let i = rand; i < upperLimit; i++) {
+          const questObjectives = [];
+          // Create userQuestObjective array for userQuest
+          for (let j = 0; j < quests[j].objectives.length; j++) {
+            const obj = quests[i].objectives[j];
+            questObjectives.push({ questObjectiveId: obj.id, progress: 0 });
+          }
+          newQuests.push({
+            questId: quests[i].id,
+            userId: id,
+            complete: false,
+            active: false,
+            objectives: questObjectives,
+          });
+        }
+        console.log(newQuests);
+        return newQuests;
       });
-    }
-    return newQuests;
-  });
+  }
+  return null;
 }
 
 // Routes
@@ -82,36 +86,49 @@ const self = {
   offerQuests: async (ctx) => {
     // Return 3 new quests
     ctx.body = await getNewQuests(ctx.user.id)
-    .then(quests => UserQuest.query().insertGraphAndFetch(quests).eager('[objectives.[objective.objective], quest.champion]'))
-    .then(quests => createQuestResponse(quests))
-    .catch(err => console.error(err));
+      .then(quests => (quests ? UserQuest.query().insertGraph(quests) : null))
+      .then(() => UserQuest
+        .query()
+        .where('userId', '=', ctx.user.id)
+        .andWhere('active', '=', false)
+        .eager('[objectives.[objective.objective], quest.champion]'))
+      .then(quests => createQuestResponse(quests))
+      .catch(err => console.error(err));
   },
   activateQuest: async (ctx, id) => {
     // Return newly activated quest
     ctx.body = await UserQuest.query()
-    .where('userId', '=', ctx.user.id)
-    .eager('[objectives.[objective.objective], quest.champion]')
-    .patchAndFetchById(id, { active: true, activationDate: new Date().toUTCString() })
-    .then(quest => createQuestResponse([quest]))
-    .catch(err => console.error(err));
+      .where('userId', '=', ctx.user.id)
+      .eager('[objectives.[objective.objective], quest.champion]')
+      .patchAndFetchById(id, { active: true, activationDate: new Date().toUTCString() })
+      .then(quest => createQuestResponse([quest]))
+      .catch(err => console.error(err));
+    // Delete all other quest offers
+    UserQuest
+      .query()
+      .delete()
+      .where('userId', '=', ctx.user.id)
+      .andWhere('active', '=', false)
+      .then(a => console.log(a))
+      .catch(err => console.error(err));
   },
   allQuests: async (ctx) => {
     // Return all quests (in progress or completed) for the given user
     ctx.body = await UserQuest.query()
-    .eager('[objectives.[objective.objective], quest.champion]')
-    .where('userId', '=', ctx.user.id)
-    .then(quests => createQuestResponse(quests));
+      .eager('[objectives.[objective.objective], quest.champion]')
+      .where('userId', '=', ctx.user.id)
+      .then(quests => createQuestResponse(quests));
   },
   updateQuests: async (ctx) => {
     const user = await User.query()
-    .eager('[quests.[quest, objectives.objective.objective]]')
-    .findById(ctx.user.id);
+      .eager('[quests.[quest, objectives.objective.objective]]')
+      .findById(ctx.user.id);
     const recentMatches = await k.Matchlist.recent({ accountID: user.accountId }).then((res) => {
       const matches = res.matches;
       // Filters to matches that occured AFTER the quest was activated
       const validMatches = matches.filter(match => user.quests
-          .some(quest => Date.parse(quest.activationDate) > match.timestamp &&
-                         quest.quest.championId === match.champion));
+        .some(quest => Date.parse(quest.activationDate) > match.timestamp &&
+          quest.quest.championId === match.champion));
       return validMatches;
     });
     // Map gameID to champion because normal games are missing participantIdentities
@@ -125,7 +142,7 @@ const self = {
     await Promise.all(matchPromises)
       // Get players data from the matches
       .then(matches => matches.map(match =>
-          getParticipantData(user.accountId, gameChampMap.get(match.gameId), match)))
+        getParticipantData(user.accountId, gameChampMap.get(match.gameId), match)))
       .then((matches) => {
         // Get quests that have progressed
         const progressedQuests = user.quests

@@ -24,6 +24,12 @@ exports.up = knex =>
       table.integer('summonerId').unsigned().references('id').inTable('Summoner');
       table.integer('accountId').unsigned();
       table.index('username');
+      table.boolean('assassin');
+      table.boolean('mage');
+      table.boolean('support');
+      table.boolean('fighter');
+      table.boolean('tank');
+      table.boolean('marksman');
     })
     .createTable('Quest', (table) => {
       table.increments('id').primary();

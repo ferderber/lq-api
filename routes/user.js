@@ -21,6 +21,14 @@ function createUserResponse(user) {
     summonerName: user.summoner.summonerName,
     profileIconId: user.summoner.profileIconId,
     level: user.summoner.level,
+    roles: {
+      assassin: user.assassin,
+      mage: user.mage,
+      support: user.support,
+      fighter: user.fighter,
+      marksman: user.marksman,
+      tank: user.tank,
+    },
   };
 }
 
@@ -39,6 +47,9 @@ module.exports = {
     ctx.body = await User.query().eager('summoner')
       .findById(ctx.user.id)
       .then(user => createUserResponse(user));
+  },
+  patchUser: async (ctx) => {
+    ctx.status = 405;
   },
   createUser: async (ctx) => {
     const user = ctx.request.body;

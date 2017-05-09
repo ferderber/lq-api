@@ -19,6 +19,12 @@ class User extends Model {
         email: { type: 'string' },
         summonerId: { type: 'integer' },
         accountId: { type: 'integer' },
+        fighter: { type: 'boolean', default: true },
+        assassin: { type: 'boolean', default: true },
+        tank: { type: 'boolean', default: true },
+        support: { type: 'boolean', default: true },
+        mage: { type: 'boolean', default: true },
+        marksman: { type: 'boolean', default: true },
       },
     };
   }

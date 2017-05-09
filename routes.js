@@ -15,6 +15,7 @@ routes.auth.push(_.post('/api/quest/:id/activate', quest.activateQuest)); // Ret
 
 // User endpoint
 routes.public.push(_.post('/api/user', user.createUser)); // Creates and returns a new user
+routes.public.push(_.patch('/api/user', user.patchUser)); // Patches user and returns the new user
 routes.public.push(_.post('/api/user/authenticate', user.authenticate)); // Attempts to verify the current authenticated user
 routes.auth.push(_.patch('/api/user/verification', user.verify)); // Attempts to verify the current authenticated user
 routes.auth.push(_.get('/api/user/:id', user.getUser)); // Gets the user identified by ID

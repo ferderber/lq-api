@@ -38,7 +38,8 @@ function createStatsResponse(users) {
     summonerName: user.summoner.summonerName,
     level: user.summoner.level,
     points: user.quests
-        .reduce((acc, quest) => acc + (quest.completed ? quest.quest.points : 0), 0) }));
+      .reduce((acc, quest) => acc + (quest.completed ? quest.quest.points : 0), 0),
+  }));
 }
 
 // Routes
@@ -49,7 +50,12 @@ module.exports = {
       .then(user => createUserResponse(user));
   },
   patchUser: async (ctx) => {
-    ctx.status = 405;
+    const body = ctx.request.body;
+    ctx.body = await User
+      .query()
+      .patchAndFetchById(ctx.user.id, body.roles)
+      .eager('summoner')
+      .then(user => createUserResponse(user));
   },
   createUser: async (ctx) => {
     const user = ctx.request.body;
@@ -60,7 +66,8 @@ module.exports = {
         id: summoner.id,
         summonerName: summoner.name,
         profileIconId: summoner.profileIconId,
-        level: summoner.summonerLevel });
+        level: summoner.summonerLevel,
+      });
       const u = await User.query().insertAndFetch({
         username: user.username,
         password: user.password,

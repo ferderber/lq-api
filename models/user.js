@@ -1,5 +1,6 @@
 const Model = require('objection').Model;
 const UserQuest = require('./user_quest');
+const UserMatch = require('./user_match');
 const Summoner = require('./summoner');
 const bcrypt = require('bcrypt');
 
@@ -45,6 +46,14 @@ class User extends Model {
         join: {
           from: 'User.summonerId',
           to: 'Summoner.id',
+        },
+      },
+      matches: {
+        relation: Model.HasManyRelation,
+        modelClass: UserMatch,
+        join: {
+          from: 'User.id',
+          to: 'UserMatch.userId',
         },
       },
     };

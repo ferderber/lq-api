@@ -53,6 +53,10 @@ exports.up = knex =>
       table.boolean('completed').default(false);
       table.timestamp('activationDate');
     })
+    .createTable('UserMatch', (table) => {
+      table.bigInteger('id').unsigned().primary();
+      table.integer('userId').unsigned().references('id').inTable('User').onDelete('CASCADE');
+    })
     .createTable('UserQuestObjective', (table) => {
       table.increments('id').primary();
       table.integer('questObjectiveId').unsigned().references('id').inTable('QuestObjective');
@@ -64,6 +68,7 @@ exports.down = knex =>
   knex.schema
     .dropTableIfExists('UserQuestObjective')
     .dropTableIfExists('UserQuest')
+    .dropTableIfExists('UserMatch')
     .dropTableIfExists('User')
     .dropTableIfExists('Summoner')
     .dropTableIfExists('QuestObjective')

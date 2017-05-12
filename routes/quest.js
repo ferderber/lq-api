@@ -3,6 +3,7 @@ const Quest = require('../models/quest');
 const User = require('../models/user');
 const UserQuestObjective = require('../models/user_quest_objective');
 const util = require('../util');
+const UserMatch = require('../models/user_match');
 
 const k = util.kindred();
 
@@ -123,24 +124,31 @@ const self = {
   },
   updateQuests: async (ctx) => {
     const user = await User.query()
-      .eager('[quests.[quest, objectives.objective.objective]]')
+      .eager('[quests.[quest, objectives.objective.objective], matches]')
       .findById(ctx.user.id);
     const recentMatches = await k.Matchlist.recent({ accountID: user.accountId }).then((res) => {
       const matches = res.matches;
       // Filters to matches that occured AFTER the quest was activated
-      const validMatches = matches.filter(match => user.quests
-        .some(quest => Date.parse(quest.activationDate) > match.timestamp &&
+      const validMatches = matches
+      .filter(match => user.matches.find(m => m.id === match.gameId) === undefined
+        && user.quests.some(quest => Date.parse(quest.activationDate) > match.timestamp &&
           quest.quest.championId === match.champion));
       return validMatches;
     });
+
     // Map gameID to champion because normal games are missing participantIdentities
     const gameChampMap = new Map();
     recentMatches.forEach(match => gameChampMap.set(match.gameId, match.champion));
+
     const matchPromises = [];
+    const userMatches = [];
     // Create promise array of match requests
     for (let i = 0; i < recentMatches.length; i++) {
+      userMatches.push({ id: recentMatches[i].gameId, userId: ctx.user.id });
       matchPromises.push(k.Match.get({ id: recentMatches[i].gameId }));
     }
+    // Add all of the used matches to UserMatches
+    UserMatch.query().insert(userMatches).then();
     await Promise.all(matchPromises)
       // Get players data from the matches
       .then(matches => matches.map(match =>

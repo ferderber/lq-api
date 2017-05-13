@@ -11,6 +11,8 @@ class Champion extends Model {
         id: { type: 'integer' },
         key: { type: 'string' },
         name: { type: 'string' },
+        role1: { type: 'string', enum: ['fighter', 'marksman', 'support', 'assassin', 'mage', 'tank'] },
+        role2: { type: 'string', enum: ['fighter', 'marksman', 'support', 'assassin', 'mage', 'tank'], default: null },
       },
     };
   }

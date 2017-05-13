@@ -4,6 +4,8 @@ exports.up = knex =>
       table.integer('id').unsigned().primary();
       table.string('key').unique();
       table.string('name');
+      table.enu('role1', ['fighter', 'marksman', 'support', 'assassin', 'mage', 'tank']);
+      table.enu('role2', ['fighter', 'marksman', 'support', 'assassin', 'mage', 'tank']);
     })
     .createTable('Objective', (table) => {
       table.increments('id').primary();

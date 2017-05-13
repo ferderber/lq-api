@@ -17,12 +17,21 @@ function getObjectives() {
   return objectives;
 }
 function getChampions() {
-  return k.Static.champions({ options: { champData: 'all' } }).then((champions) => {
+  return k.Static.champions({ options: { champData: 'all', champListData: 'tags' } }).then((champions) => {
     const champKeys = Object.keys(champions.data);
     const champs = [];
     for (let i = 0; i < champKeys.length; i += 1) {
       const champion = champions.data[champKeys[i]];
-      champs.push({ id: champion.id, name: champion.name, key: champion.key });
+
+      // Remove invalid data from shen
+      const role1 = champion.tags[0].substring(0, champion.tags[0].indexOf(',') === -1 ? champions.tags[0].length : champion.tags[0].indexOf(',')).toLowerCase();
+      champs.push({
+        id: champion.id,
+        name: champion.name,
+        key: champion.key,
+        role1,
+        role2: champion.tags[1] ? champion.tags[1].toLowerCase() : null,
+      });
     }
     return champs;
   });
@@ -45,7 +54,7 @@ async function addQuests() {
 exports.seed = (knex) => {
   Model.knex(knex);
   return knex('Objective').insert(getObjectives())
-       .then(() => getChampions())
-       .then(champions => knex('Champion').insert(champions))
-       .then(() => addQuests());
+    .then(() => getChampions())
+    .then(champions => knex('Champion').insert(champions))
+    .then(() => addQuests());
 };

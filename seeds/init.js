@@ -22,7 +22,6 @@ function getChampions() {
     const champs = [];
     for (let i = 0; i < champKeys.length; i += 1) {
       const champion = champions.data[champKeys[i]];
-      console.log(champion.tags);
 
       // Remove invalid data from shen
       const role1 = champion.tags[0].substring(0, champion.tags[0].indexOf(',') === -1 ? champion.tags[0].length : champion.tags[0].indexOf(',')).toLowerCase();

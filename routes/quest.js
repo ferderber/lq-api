@@ -4,6 +4,7 @@ const User = require('../models/user');
 const UserQuestObjective = require('../models/user_quest_objective');
 const util = require('../util');
 const UserMatch = require('../models/user_match');
+const Champion = require('../models/champion');
 
 const k = util.kindred();
 
@@ -35,9 +36,27 @@ function getParticipantData(id, champion, game) {
   }
   return game.participants.find(p => p.championId === champion);
 }
+// Create array of strings representing users role preference
+function createRolesArray(user) {
+  const roles = [];
+  if (user.assassin) roles.push('assassin');
+  if (user.marksman) roles.push('marksman');
+  if (user.support) roles.push('support');
+  if (user.fighter) roles.push('fighter');
+  if (user.tank) roles.push('tank');
+  if (user.mage) roles.push('mage');
+  return roles;
+}
 // Finds 3 (or fewer) new quests for a user
 async function getNewQuests(id) {
-  const userQuests = await UserQuest.query().where('userId', '=', id).eager('quest');
+  const user = await User.query().findById(id).eager('[quests.quest]');
+  const userQuests = user.quests;
+  const roles = createRolesArray(user);
+  // Get champions that fit the users role preferences
+  const champions = await Champion.query()
+    .whereIn('role1', roles)
+    .orWhereIn('role2', roles)
+    .then(champs => champs.map(c => c.id));
   const currentQuests = [];
   let numOffered = 0;
   let numActive = 0;
@@ -48,7 +67,10 @@ async function getNewQuests(id) {
   }
   if (numOffered === 0 && numActive < 5) {
     // Find quests that user is not already doing
-    return Quest.query().whereNotIn('id', currentQuests).eager('objectives')
+    return Quest.query()
+      .whereNotIn('id', currentQuests)
+      .whereIn('championId', champions)
+      .eager('[objectives]')
       .then((quests) => {
         const newQuests = [];
         let rand;
@@ -130,9 +152,9 @@ const self = {
       const matches = res.matches;
       // Filters to matches that occured AFTER the quest was activated
       const validMatches = matches
-      .filter(match => user.matches.find(m => m.id === match.gameId) === undefined
-        && user.quests.some(quest => Date.parse(quest.activationDate) > match.timestamp &&
-          quest.quest.championId === match.champion));
+        .filter(match => user.matches.find(m => m.id === match.gameId) === undefined
+          && user.quests.some(quest => Date.parse(quest.activationDate) > match.timestamp &&
+            quest.quest.championId === match.champion));
       return validMatches;
     });
 

@@ -6,24 +6,22 @@
   },
   "dependencies": {
     "bcrypt": "^1.0.2",
-    "jsonwebtoken": "^7.3.0",
-    "kcors": "^1.3.2",
-    "kindred-api": "^2.0.14",
-    "knex": "^0.12.9",
-    "koa": "^2.0.1",
+    "jsonwebtoken": "^7.4.1",
+    "kcors": "^2.2.1",
+    "knex": "^0.13.0",
+    "koa": "^2.3.0",
     "koa-bodyparser": "^4.2.0",
-    "koa-jwt": "^3.0.1",
+    "koa-jwt": "^3.2.2",
     "koa-route": "^3.2.0",
-    "objection": "next",
-    "pg": "^6.1.5",
+    "leaguejs": "^1.5.0",
+    "objection": "^0.8.3",
+    "pg": "^6.2.4",
     "pg-hstore": "^2.3.2"
   },
   "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb": "^14.1.0",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-react": "^6.10.3",
+    "eslint": "^4.0.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.3.0",
     "nodemon": "^1.11.0"
   }
 }

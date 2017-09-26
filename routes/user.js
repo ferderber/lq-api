@@ -2,7 +2,7 @@ const User = require('../models/user.js');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const bcrypt = require('bcrypt');
-const k = require('../util').kindred();
+const api = require('../util').api;
 const Quest = require('../models/quest');
 const Summoner = require('../models/summoner');
 const UserQuest = require('../models/user_quest');
@@ -60,30 +60,39 @@ module.exports = {
   createUser: async (ctx) => {
     const user = ctx.request.body;
     if (user && user.username && user.email && user.password && user.summonerName) {
-      const summoner = await k.Summoner.get({ name: user.summonerName })
+      const summoner = await api.Summoner.gettingByName(user.summonerName)
         .catch(err => console.error(err));
-      const s = await Summoner.query().insertAndFetch({
-        id: summoner.id,
-        summonerName: summoner.name,
-        profileIconId: summoner.profileIconId,
-        level: summoner.summonerLevel,
-      });
-      const u = await User.query().insertAndFetch({
-        username: user.username,
-        password: user.password,
-        email: user.email,
-        summonerId: summoner.id,
-        accountId: summoner.accountId,
-      });
-      const token = jwt.sign({ id: u.id }, secret);
-      u.summoner = s;
-      ctx.body = {
-        user: createUserResponse(u),
-        token,
-      };
+      try {
+        const s = await Summoner.query().insertAndFetch({
+          id: summoner.id,
+          summonerName: summoner.name,
+          profileIconId: summoner.profileIconId,
+          level: summoner.summonerLevel,
+        });
+        const u = await User.query().insertAndFetch({
+          username: user.username,
+          password: user.password,
+          email: user.email,
+          summonerId: summoner.id,
+          accountId: summoner.accountId,
+        });
+        const token = jwt.sign({ id: u.id }, secret);
+        u.summoner = s;
+        ctx.body = {
+          user: createUserResponse(u),
+          token,
+        };
+      } catch (err) {
+        ctx.status = 403;
+        if (err.code === '23505') {
+          ctx.body = { message: 'A user is already registered with that Summoner name / Username' };
+        } else {
+          ctx.body = { message: 'An error occured creating your account' };
+        }
+      }
     } else {
       ctx.body = { message: 'Missing user details' };
-      ctx.status = 412;
+      ctx.status = 400;
     }
   },
   authenticate: async (ctx) => {

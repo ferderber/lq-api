@@ -1,5 +1,5 @@
 exports.up = knex =>
-   knex.schema
+  knex.schema
     .createTable('Champion', (table) => {
       table.integer('id').unsigned().primary();
       table.string('key').unique();

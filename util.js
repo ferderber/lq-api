@@ -1,15 +1,4 @@
-const Kindred = require('kindred-api');
 const config = require('./config.js');
+const LeagueJS = require('leaguejs');
 
-const REGIONS = Kindred.REGIONS;
-const LIMITS = Kindred.LIMITS;
-const CACHETYPES = Kindred.CACHE_TYPES;
-
-module.exports = {
-  kindred: () => new Kindred.Kindred({
-    key: config.leagueAPIKey,
-    defaultRegion: REGIONS.NORTH_AMERICA,
-    limits: LIMITS.DEV,
-    cacheOptions: CACHETYPES[0],
-  }),
-};
+module.exports.api = new LeagueJS(config.leagueAPIKey, { caching: { isEnabled: true }, PLATFORM_ID: 'na1' });

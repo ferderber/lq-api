@@ -1,4 +1,4 @@
-const k = require('../util').kindred();
+const api = require('../util').api;
 const Champion = require('../models/champion');
 const Quest = require('../models/quest');
 const Model = require('objection').Model;
@@ -17,19 +17,17 @@ function getObjectives() {
   return objectives;
 }
 function getChampions() {
-  return k.Static.champions({ options: { champData: 'all', champListData: 'tags' } }).then((champions) => {
+  return api.StaticData.gettingChampions({ tags: 'tags' }).then((champions) => {
     const champKeys = Object.keys(champions.data);
     const champs = [];
     for (let i = 0; i < champKeys.length; i += 1) {
       const champion = champions.data[champKeys[i]];
 
-      // Remove invalid data from shen
-      const role1 = champion.tags[0].substring(0, champion.tags[0].indexOf(',') === -1 ? champion.tags[0].length : champion.tags[0].indexOf(',')).toLowerCase();
       champs.push({
         id: champion.id,
         name: champion.name,
         key: champion.key,
-        role1,
+        role1: champion.tags[0].toLowerCase(),
         role2: champion.tags[1] ? champion.tags[1].toLowerCase() : null,
       });
     }

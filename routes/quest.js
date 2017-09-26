@@ -6,7 +6,7 @@ const util = require('../util');
 const UserMatch = require('../models/user_match');
 const Champion = require('../models/champion');
 
-const k = util.kindred();
+const api = util.api;
 
 // Creates a flattened quest object
 function createQuestResponse(quests) {
@@ -94,7 +94,7 @@ async function getNewQuests(id) {
           newQuests.push({
             questId: quests[i].id,
             userId: id,
-            complete: false,
+            completed: false,
             active: false,
             objectives: questObjectives,
           });
@@ -148,15 +148,16 @@ const self = {
     const user = await User.query()
       .eager('[quests.[quest, objectives.objective.objective], matches]')
       .findById(ctx.user.id);
-    const recentMatches = await k.Matchlist.recent({ accountID: user.accountId }).then((res) => {
-      const matches = res.matches;
-      // Filters to matches that occured AFTER the quest was activated
-      const validMatches = matches
-        .filter(match => user.matches.find(m => m.id === match.gameId) === undefined
+    const recentMatches = await api.Match.gettingRecentListByAccount(user.accountId)
+      .then((res) => {
+        const matches = res.matches;
+        // Filters to matches that occured AFTER the quest was activated
+        const validMatches = matches
+          .filter(match => user.matches.find(m => m.id === match.gameId) === undefined
           && user.quests.some(quest => Date.parse(quest.activationDate) > match.timestamp &&
             quest.quest.championId === match.champion));
-      return validMatches;
-    });
+        return validMatches;
+      });
 
     // Map gameID to champion because normal games are missing participantIdentities
     const gameChampMap = new Map();
@@ -167,7 +168,7 @@ const self = {
     // Create promise array of match requests
     for (let i = 0; i < recentMatches.length; i++) {
       userMatches.push({ id: recentMatches[i].gameId, userId: ctx.user.id });
-      matchPromises.push(k.Match.get({ id: recentMatches[i].gameId }));
+      matchPromises.push(api.Match.gettingById(recentMatches[i].gameId));
     }
     // Add all of the used matches to UserMatches
     UserMatch.query().insert(userMatches).then();

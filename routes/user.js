@@ -3,9 +3,8 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const bcrypt = require('bcrypt');
 const api = require('../util').api;
-const Quest = require('../models/quest');
 const Summoner = require('../models/summoner');
-const UserQuest = require('../models/user_quest');
+const uuid = require('uuid');
 
 const secret = config.secret;
 
@@ -21,6 +20,8 @@ function createUserResponse(user) {
     summonerName: user.summoner.summonerName,
     profileIconId: user.summoner.profileIconId,
     level: user.summoner.level,
+    verified: user.verified,
+    verificationId: user.verificationId,
     roles: {
       assassin: user.assassin,
       mage: user.mage,
@@ -75,6 +76,7 @@ module.exports = {
           email: user.email,
           summonerId: summoner.id,
           accountId: summoner.accountId,
+          verificationId: uuid.v4(),
         });
         const token = jwt.sign({ id: u.id }, secret);
         u.summoner = s;
@@ -117,7 +119,31 @@ module.exports = {
       .eager('[quests.quest, summoner]'))
       .sort((u1, u2) => u1.points < u2.points).slice(0, limit);
   },
-  verify: (ctx) => {
-    ctx.status = 405;
+  verify: async (ctx) => {
+    try {
+      const user = await User.query().findById(ctx.user.id);
+      if (user) {
+        if (!user.verified) {
+          const runes = await api.Runes.gettingBySummoner(user.summonerId);
+          if (runes && !runes.pages.some(rune => rune.name === user.verificationId)) {
+            user.verified = true;
+            User.query()
+              .patch({ verified: true })
+              .where('id', user.id).execute();
+            ctx.status = 200;
+          } else {
+            ctx.status = 400;
+            ctx.body = { message: 'No valid rune page found' };
+          }
+        } else {
+          ctx.status = 200;
+          ctx.body = { message: 'Already verified' };
+        }
+      } else {
+        ctx.status = 401;
+      }
+    } catch (err) {
+      ctx.status = 500;
+    }
   },
 };

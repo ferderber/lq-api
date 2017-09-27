@@ -16,7 +16,8 @@
     "leaguejs": "^1.5.0",
     "objection": "^0.8.3",
     "pg": "^6.2.4",
-    "pg-hstore": "^2.3.2"
+    "pg-hstore": "^2.3.2",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "eslint": "^4.0.0",

@@ -20,6 +20,8 @@ class User extends Model {
         email: { type: 'string' },
         summonerId: { type: 'integer' },
         accountId: { type: 'integer' },
+        verificationId: { type: 'uuid' },
+        verified: { type: 'boolean', default: false },
         fighter: { type: 'boolean', default: true },
         assassin: { type: 'boolean', default: true },
         tank: { type: 'boolean', default: true },

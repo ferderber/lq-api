@@ -25,6 +25,8 @@ exports.up = knex =>
       table.string('password');
       table.integer('summonerId').unsigned().references('id').inTable('Summoner');
       table.integer('accountId').unsigned();
+      table.uuid('verificationId');
+      table.boolean('verified');
       table.index('username');
       table.boolean('assassin');
       table.boolean('mage');
@@ -43,7 +45,8 @@ exports.up = knex =>
     .createTable('QuestObjective', (table) => {
       table.increments('id').primary();
       table.integer('questId').unsigned().references('id').inTable('Quest');
-      table.integer('objectiveId').unsigned().references('id').inTable('Objective').onDelete('CASCADE');
+      table.integer('objectiveId').unsigned().references('id').inTable('Objective')
+        .onDelete('CASCADE');
       table.integer('goalType').unsigned();
       table.integer('goal').unsigned();
     })
@@ -57,12 +60,14 @@ exports.up = knex =>
     })
     .createTable('UserMatch', (table) => {
       table.bigInteger('id').unsigned().primary();
-      table.integer('userId').unsigned().references('id').inTable('User').onDelete('CASCADE');
+      table.integer('userId').unsigned().references('id').inTable('User')
+        .onDelete('CASCADE');
     })
     .createTable('UserQuestObjective', (table) => {
       table.increments('id').primary();
       table.integer('questObjectiveId').unsigned().references('id').inTable('QuestObjective');
-      table.integer('userQuestId').unsigned().references('id').inTable('UserQuest').onDelete('CASCADE');
+      table.integer('userQuestId').unsigned().references('id').inTable('UserQuest')
+        .onDelete('CASCADE');
       table.integer('progress');
     });
 

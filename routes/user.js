@@ -9,8 +9,8 @@ const uuid = require('uuid');
 const secret = config.secret;
 
 // Validates that a password matches its hash
-function isValidPassword(passwordHash, password) {
-  return bcrypt.compareSync(password, passwordHash);
+async function isValidPassword(passwordHash, password) {
+  return bcrypt.compare(password, passwordHash);
 }
 // Creates a flattened user object
 function createUserResponse(user) {
@@ -98,21 +98,22 @@ module.exports = {
     }
   },
   authenticate: async (ctx) => {
-    await User.query()
-      .eager('summoner')
-      .where(User.raw('lower("username")'), 'like', `${ctx.request.body.username}`)
-      .then((u) => {
-        const user = u[0];
-        if (user && isValidPassword(user.password, ctx.request.body.password)) {
-          const payload = { id: user.id };
-          const token = jwt.sign(payload, secret);
-          ctx.body = { message: 'ok', token, user: createUserResponse(user) };
-        } else {
-          ctx.body = { message: 'Invalid username or password' };
-          ctx.status = 401;
-        }
-      })
-      .catch(err => console.error(err));
+    try {
+      const users = await User.query()
+        .eager('summoner')
+        .where(User.raw('lower("username")'), 'like', `${ctx.request.body.username}`);
+      const user = users[0];
+      if (user && await isValidPassword(user.password, ctx.request.body.password)) {
+        const payload = { id: user.id };
+        const token = jwt.sign(payload, secret);
+        ctx.body = { message: 'ok', token, user: createUserResponse(user) };
+      } else {
+        ctx.body = { message: 'Invalid username or password' };
+        ctx.status = 401;
+      }
+    } catch (err) {
+      ctx.status = 500;
+    }
   },
   getStats: async (ctx, limit) => {
     ctx.body = createStatsResponse(await User.query()

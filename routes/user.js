@@ -132,6 +132,7 @@ module.exports = {
               .patch({ verified: true })
               .where('id', user.id).execute();
             ctx.status = 200;
+            ctx.body = createUserResponse(user);
           } else {
             ctx.status = 400;
             ctx.body = { message: 'No valid rune page found' };
